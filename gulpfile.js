@@ -5,6 +5,7 @@ var header = require('gulp-header');
 var cleanCSS = require('gulp-clean-css');
 var rename = require("gulp-rename");
 var uglify = require('gulp-uglify');
+var merge = require('merge-stream');
 var pkg = require('./package.json');
 
 // Set the banner content
@@ -52,13 +53,21 @@ gulp.task('minify-js', function() {
 
 // Copy vendor libraries from /node_modules into /vendor
 gulp.task('copy', function() {
-    gulp.src(['node_modules/bootstrap/dist/**/*', '!**/npm.js', '!**/bootstrap-theme.*', '!**/*.map'])
-        .pipe(gulp.dest('vendor/bootstrap'))
+    var bootstrap = gulp.src([
+            'node_modules/bootstrap/dist/**/*',
+            '!**/npm.js',
+            '!**/bootstrap-theme.*',
+            '!**/*.map'
+        ])
+        .pipe(gulp.dest('vendor/bootstrap'));
 
-    gulp.src(['node_modules/jquery/dist/jquery.js', 'node_modules/jquery/dist/jquery.min.js'])
-        .pipe(gulp.dest('vendor/jquery'))
+    var jquery = gulp.src([
+            'node_modules/jquery/dist/jquery.js',
+            'node_modules/jquery/dist/jquery.min.js'
+        ])
+        .pipe(gulp.dest('vendor/jquery'));
 
-    gulp.src([
+    var fontAwesome = gulp.src([
             'node_modules/font-awesome/**',
             '!node_modules/font-awesome/**/*.map',
             '!node_modules/font-awesome/.npmignore',
@@ -66,8 +75,10 @@ gulp.task('copy', function() {
             '!node_modules/font-awesome/*.md',
             '!node_modules/font-awesome/*.json'
         ])
-        .pipe(gulp.dest('vendor/font-awesome'))
-})
+        .pipe(gulp.dest('vendor/font-awesome'));
+
+    return merge(bootstrap, jquery, fontAwesome);
+});
 
 // Run everything
 gulp.task('default', ['less', 'minify-css', 'minify-js', 'copy']);
